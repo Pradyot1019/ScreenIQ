@@ -3,11 +3,11 @@
 import enum
 import uuid
 
-from sqlalchemy import Enum, ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.mixins import CreatedAt, TenantMixin, UUIDPk
+from app.models.mixins import CreatedAt, TenantMixin, UUIDPk, pg_enum
 
 
 class Plan(enum.StrEnum):
@@ -21,11 +21,6 @@ class Role(enum.StrEnum):
     VIEWER = "viewer"
 
 
-def _pg_enum(cls: type[enum.StrEnum], name: str) -> Enum:
-    # Store the lowercase *values* ("owner"), not the Python names ("OWNER").
-    return Enum(cls, name=name, values_callable=lambda e: [m.value for m in e])
-
-
 class Organization(Base):
     __tablename__ = "organizations"
 
@@ -33,7 +28,7 @@ class Organization(Base):
     name: Mapped[str] = mapped_column(String(200))
     slug: Mapped[str] = mapped_column(String(80), unique=True)
     plan: Mapped[Plan] = mapped_column(
-        _pg_enum(Plan, "plan"), default=Plan.FREE, server_default=Plan.FREE.value
+        pg_enum(Plan, "plan"), default=Plan.FREE, server_default=Plan.FREE.value
     )
     blind_mode_default: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[CreatedAt]
@@ -47,5 +42,5 @@ class Membership(TenantMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
-    role: Mapped[Role] = mapped_column(_pg_enum(Role, "membership_role"))
+    role: Mapped[Role] = mapped_column(pg_enum(Role, "membership_role"))
     created_at: Mapped[CreatedAt]

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMe } from "@/lib/auth";
 
@@ -22,11 +24,14 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>Jobs</CardTitle>
           <CardDescription>
-            Create a job, paste its description, and ScreenIQ drafts a scoring rubric. Coming in
-            Phase 2.
+            Create a job, paste its description, and ScreenIQ drafts a scoring rubric you can edit.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">No jobs yet.</CardContent>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link href="/app/jobs">Go to jobs</Link>
+          </Button>
+        </CardContent>
       </Card>
     </div>
   );

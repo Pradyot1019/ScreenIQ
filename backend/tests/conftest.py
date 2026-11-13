@@ -25,10 +25,14 @@ TEST_DATABASE_URL = _dev_url.set(database=f"{_dev_url.database}_test").render_as
 )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["APP_ENV"] = "test"
+# Tests must never call a real LLM (cost, flakiness, data leaving the machine), even if
+# a developer's .env has a real key. Tests that need an LLM install FakeLLMProvider.
+os.environ["GEMINI_API_KEY"] = ""
 
 import asyncpg  # noqa: E402
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E402
 from sqlalchemy.pool import NullPool  # noqa: E402
@@ -91,12 +95,19 @@ async def db_session(migrated_db: str) -> AsyncIterator[AsyncSession]:
 
 
 @pytest.fixture
-async def api(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
-    app = create_app()
+def app(db_session: AsyncSession) -> FastAPI:
+    """The app wired to the test DB. Tests can add more overrides, e.g. a fake LLM:
+    app.dependency_overrides[get_llm_provider] = lambda: FakeLLMProvider([...])"""
+    application = create_app()
 
     async def _test_db() -> AsyncIterator[AsyncSession]:
         yield db_session
 
-    app.dependency_overrides[get_db] = _test_db
+    application.dependency_overrides[get_db] = _test_db
+    return application
+
+
+@pytest.fixture
+async def api(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
         yield c

@@ -31,7 +31,8 @@ class Settings(BaseSettings):
     s3_secret_key: str = "minioadmin"  # noqa: S105
 
     gemini_api_key: str = ""
-    llm_model: str = "gemini-2.5-flash"
+    llm_model: str = "gemini-3.5-flash-lite"  # free tier; see ADR 0003
+    llm_timeout_s: float = 60.0  # spec NFR: LLM call timeout of 60 s
     embedding_model: str = ""
 
     # Comma-separated in the env var, parsed into a list here.

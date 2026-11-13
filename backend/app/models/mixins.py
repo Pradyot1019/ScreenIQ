@@ -7,11 +7,12 @@
   TenantRepository (Step 2) relies on it to filter every query by org.
 """
 
+import enum
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
-from sqlalchemy import DateTime, ForeignKey, func, text
+from sqlalchemy import DateTime, Enum, ForeignKey, func, text
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 UUIDPk = Annotated[
@@ -22,6 +23,11 @@ CreatedAt = Annotated[
     datetime,
     mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False),
 ]
+
+
+def pg_enum(cls: type[enum.StrEnum], name: str) -> Enum:
+    """A Postgres ENUM that stores the lowercase *values* ("owner"), not the names ("OWNER")."""
+    return Enum(cls, name=name, values_callable=lambda e: [m.value for m in e])
 
 
 class TenantMixin:

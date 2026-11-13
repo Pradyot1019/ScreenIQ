@@ -47,3 +47,88 @@ export const SignupInput = z.object({
   org_name: name,
 });
 export type SignupInput = z.infer<typeof SignupInput>;
+
+// ---- Jobs & rubric (mirrors backend/app/schemas/jobs.py) --------------------------------
+
+export const JobStatusSchema = z.enum(["draft", "open", "closed"]);
+export type JobStatus = z.infer<typeof JobStatusSchema>;
+
+export const EmploymentTypeSchema = z.enum(["full_time", "part_time", "contract", "internship"]);
+export type EmploymentType = z.infer<typeof EmploymentTypeSchema>;
+
+export const CriterionTypeSchema = z.enum(["skill", "experience", "education", "other"]);
+export type CriterionType = z.infer<typeof CriterionTypeSchema>;
+
+export const CriterionSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  type: CriterionTypeSchema,
+  weight: z.number().int(),
+  is_knockout: z.boolean(),
+});
+export type Criterion = z.infer<typeof CriterionSchema>;
+
+export const JobSchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  department: z.string().nullable(),
+  location: z.string().nullable(),
+  employment_type: EmploymentTypeSchema,
+  description: z.string(),
+  status: JobStatusSchema,
+  slug: z.string(),
+  blind_mode: z.boolean(),
+  created_by: z.uuid().nullable(),
+  created_at: z.string(),
+  criteria: z.array(CriterionSchema.extend({ id: z.uuid() })),
+});
+export type Job = z.infer<typeof JobSchema>;
+
+export const JobPageSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.uuid(),
+      title: z.string(),
+      department: z.string().nullable(),
+      location: z.string().nullable(),
+      employment_type: EmploymentTypeSchema,
+      status: JobStatusSchema,
+      slug: z.string(),
+      created_at: z.string(),
+      criteria_count: z.number(),
+    }),
+  ),
+  next_cursor: z.string().nullable(),
+});
+export type JobPage = z.infer<typeof JobPageSchema>;
+
+export const RubricDraftSchema = z.object({
+  criteria: z.array(CriterionSchema),
+  prompt_version: z.string(),
+});
+
+const optionalText = z
+  .string()
+  .trim()
+  .max(120, "Too long")
+  .transform((v) => (v === "" ? null : v));
+
+export const JobInput = z.object({
+  title: z.string().trim().min(1, "Required").max(200, "Too long"),
+  department: optionalText,
+  location: optionalText,
+  employment_type: EmploymentTypeSchema,
+  description: z
+    .string()
+    .trim()
+    .min(50, "Paste the full job description (at least 50 characters)")
+    .max(20000, "Too long (max 20,000 characters)"),
+});
+export type JobInput = z.infer<typeof JobInput>;
+
+export const EMPLOYMENT_LABELS: Record<EmploymentType, string> = {
+  full_time: "Full-time",
+  part_time: "Part-time",
+  contract: "Contract",
+  internship: "Internship",
+};

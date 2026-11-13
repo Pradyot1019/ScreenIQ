@@ -1,0 +1,60 @@
+{
+  "criteria": [
+    {
+      "name": "Backend experience (3+ years)",
+      "description": "At least 3 years of professional backend development, shown by job titles and dates.",
+      "type": "experience",
+      "suggested_weight": 25,
+      "is_knockout": true
+    },
+    {
+      "name": "Python (incl. async)",
+      "description": "Professional Python work, ideally with asyncio, FastAPI or similar async frameworks.",
+      "type": "skill",
+      "suggested_weight": 25,
+      "is_knockout": true
+    },
+    {
+      "name": "SQL / PostgreSQL",
+      "description": "Designing schemas, writing queries, or tuning performance in PostgreSQL.",
+      "type": "skill",
+      "suggested_weight": 20,
+      "is_knockout": false
+    },
+    {
+      "name": "REST API design",
+      "description": "Building and maintaining REST APIs used in production.",
+      "type": "skill",
+      "suggested_weight": 15,
+      "is_knockout": false
+    },
+    {
+      "name": "B.Tech/B.E. in CS or equivalent",
+      "description": "Bachelor's in Computer Science or related field, or equivalent practical experience.",
+      "type": "education",
+      "suggested_weight": 10,
+      "is_knockout": false
+    },
+    {
+      "name": "Docker / AWS",
+      "description": "Containerising services or deploying on AWS.",
+      "type": "skill",
+      "suggested_weight": 5,
+      "is_knockout": false
+    },
+    {
+      "name": "LLM / ML systems in production",
+      "description": "Shipping features that use LLM APIs or ML models.",
+      "type": "skill",
+      "suggested_weight": 5,
+      "is_knockout": false
+    },
+    {
+      "name": "Work authorization in India",
+      "description": "Authorized to work in India.",
+      "type": "other",
+      "suggested_weight": 5,
+      "is_knockout": true
+    }
+  ]
+}

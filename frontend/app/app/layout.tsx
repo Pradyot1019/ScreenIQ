@@ -49,6 +49,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             ScreenIQ
           </Link>
           {active && <span className="text-sm text-muted-foreground">{active.org_name}</span>}
+          <nav className="ml-4 text-sm">
+            <Link
+              href="/app/jobs"
+              className={pathname.startsWith("/app/jobs") ? "font-medium" : "text-muted-foreground"}
+            >
+              Jobs
+            </Link>
+          </nav>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">{me.data.user.full_name}</span>

@@ -60,6 +60,25 @@ class QuotaExceededError(AppError):
     status, type_, title = 402, "quota-exceeded", "Plan quota exceeded"
 
 
+# 5xx errors caused by an upstream service (the LLM API), not by our own bug.
+class BadGatewayError(AppError):
+    """502: the upstream answered, but with something unusable (an error or invalid output)."""
+
+    status, type_, title = 502, "upstream-error", "Upstream service error"
+
+
+class ServiceUnavailableError(AppError):
+    """503: the feature can't work right now (e.g. no API key configured)."""
+
+    status, type_, title = 503, "service-unavailable", "Service unavailable"
+
+
+class GatewayTimeoutError(AppError):
+    """504: the upstream didn't answer in time."""
+
+    status, type_, title = 504, "upstream-timeout", "Upstream service timed out"
+
+
 def problem(
     status: int,
     type_: str,

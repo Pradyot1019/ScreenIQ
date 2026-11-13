@@ -69,3 +69,10 @@ export function safeNextPath(next: string | null): string {
   }
   return next;
 }
+
+/** Owners and recruiters can edit jobs; viewers (hiring managers) can only read. */
+export function useCanWrite(): boolean {
+  const { data } = useMe();
+  const role = data?.memberships.find((m) => m.org_id === data.active_org_id)?.role;
+  return role === "owner" || role === "recruiter";
+}

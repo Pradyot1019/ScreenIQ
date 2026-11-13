@@ -152,7 +152,7 @@ Priority: **P0** = MVP must-have, **P1** = should have, **P2** = nice to have.
 | Database | **PostgreSQL 16 + pgvector** | Relational data and vector search in one DB |
 | Queue / workers | **Redis + ARQ** (or Celery) | Async parsing and screening |
 | Object storage | RustFS locally (S3-compatible; MinIO images were discontinued, see ADR 0002), Cloudflare R2 / S3 in production | Resume files |
-| LLM | **Gemini 2.5 Flash** behind an `LLMProvider` interface (swap to OpenAI/Claude/local) | Cheap and fast, with structured output |
+| LLM | **Gemini 3.5 Flash-Lite** (free tier; 2.5 Flash was retired, see ADR 0003) behind an `LLMProvider` interface (swap to OpenAI/Claude/local) | Free, fast, with structured output |
 | Embeddings | Gemini `text-embedding` or `bge-small` locally | Talent search |
 | Orchestration | Plain Python services; LangGraph only for the "Ask the pool" agent | Avoid over-engineering |
 | Auth | Custom JWT (python-jose/pyjwt) + passlib/argon2 | Teaches you how auth actually works |
@@ -436,6 +436,8 @@ screeniq/
 | **10. Harden & Deploy** | 1 | Rate limits, security headers, Playwright E2E, deploy to Vercel/Render/Neon/Upstash/R2, seed demo org, README + architecture diagram + demo video | Public URL with a demo login; README has a GIF |
 
 **MVP checkpoint (end of Phase 5):** deploy here first, then keep iterating.
+
+> **Scope trimmed (2026-11-14):** build Phases 0–6 plus a cut-down deploy; Phases 7–8 are optional stretch; Phase 9 and most P2 items are cut. The exact list is in `CLAUDE.md` → Scope.
 
 ---
 

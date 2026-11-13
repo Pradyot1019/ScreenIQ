@@ -1,0 +1,22 @@
+Backend Engineer (Python) — Bengaluru, Full-time
+
+We're a 40-person B2B SaaS startup building workflow tools for logistics companies.
+
+What you'll do
+- Design and build REST APIs in Python (FastAPI) used by thousands of daily users
+- Own PostgreSQL schemas, migrations and query performance
+- Run background jobs on Redis-backed queues
+- Write tests and review your teammates' code
+
+Must have
+- 3+ years of professional backend development experience
+- Strong Python, including async code
+- Solid SQL and PostgreSQL experience
+- Bachelor's degree in Computer Science or a related field, or equivalent experience
+
+Nice to have
+- Docker and AWS experience
+- Experience with LLM APIs or ML systems in production
+- Open-source contributions
+
+You must be authorized to work in India.
