@@ -37,8 +37,9 @@ NEW to REST API design, HTTP semantics, authentication, database migrations and 
 ## Status
 
 - Phase 0 (Setup): done (`4fcbb5f`). Local S3 is RustFS, not MinIO (ADR 0002); S3 clients need path-style addressing.
-- Phase 1 (Auth & Orgs): next. Kickoff prompt is in spec Section 18.2. Start by initialising
-  shadcn/ui (not done in Phase 0) for the auth forms.
+- Phase 1 (Auth & Orgs): done. JWT access token (memory) + rotating refresh cookie, TenantRepository,
+  tenancy tests in backend/tests/tenancy, shadcn/ui login/signup, guarded /app.
+- Phase 2 (Jobs & Rubric): next. Kickoff prompt is in spec Section 18.2.
 
 ## Commands
 

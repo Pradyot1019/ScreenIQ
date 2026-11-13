@@ -30,6 +30,7 @@ class AppError(Exception):
     status: int = 500
     type_: str = "internal-error"
     title: str = "Internal Server Error"
+    headers: dict[str, str] | None = None
 
     def __init__(self, detail: str | None = None, **extra: Any) -> None:
         super().__init__(detail or self.title)
@@ -51,6 +52,8 @@ class ForbiddenError(AppError):
 
 class UnauthorizedError(AppError):
     status, type_, title = 401, "unauthorized", "Not authenticated"
+    # HTTP requires a 401 to say which auth scheme the client should use.
+    headers = {"WWW-Authenticate": "Bearer"}
 
 
 class QuotaExceededError(AppError):
@@ -58,7 +61,13 @@ class QuotaExceededError(AppError):
 
 
 def problem(
-    status: int, type_: str, title: str, detail: str, instance: str, **extra: Any
+    status: int,
+    type_: str,
+    title: str,
+    detail: str,
+    instance: str,
+    headers: dict[str, str] | None = None,
+    **extra: Any,
 ) -> JSONResponse:
     body = {
         "type": PROBLEM_BASE + type_,
@@ -68,13 +77,21 @@ def problem(
         "instance": instance,
         **extra,
     }
-    return JSONResponse(body, status_code=status, media_type=PROBLEM_JSON)
+    return JSONResponse(body, status_code=status, media_type=PROBLEM_JSON, headers=headers)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(request: Request, exc: AppError) -> JSONResponse:
-        return problem(exc.status, exc.type_, exc.title, exc.detail, request.url.path, **exc.extra)
+        return problem(
+            exc.status,
+            exc.type_,
+            exc.title,
+            exc.detail,
+            request.url.path,
+            headers=exc.headers,
+            **exc.extra,
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:

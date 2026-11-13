@@ -17,7 +17,7 @@ export function ApiStatus() {
       : [`API ${data.status}`, "bg-emerald-500"];
 
   return (
-    <p role="status" className="inline-flex items-center gap-2 text-sm text-slate-600">
+    <p role="status" className="inline-flex items-center gap-2 text-sm text-muted-foreground">
       <span aria-hidden className={`h-2.5 w-2.5 rounded-full ${color}`} />
       {label}
     </p>

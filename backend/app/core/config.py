@@ -7,7 +7,7 @@ Every secret comes from the environment; nothing sensitive is hard-coded.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://screeniq:screeniq@localhost:5432/screeniq"
     redis_url: str = "redis://localhost:6379/0"
 
-    jwt_secret: str = "change-me"  # noqa: S105 - overridden via env in every real deploy
+    # Dev-only default (32+ chars so HS256 has a full-length key). Refused outside local/test.
+    jwt_secret: str = "change-me-dev-only-not-a-real-secret-000"  # noqa: S105
     jwt_access_ttl_min: int = 15
     jwt_refresh_ttl_days: int = 7
 
@@ -39,6 +40,20 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.cors_origins_raw.split(",") if o.strip()]
+
+    @property
+    def cookie_secure(self) -> bool:
+        # Browsers only send Secure cookies over HTTPS; local dev runs on plain HTTP.
+        return self.app_env in ("staging", "production")
+
+    @model_validator(mode="after")
+    def _no_default_secret_in_prod(self) -> "Settings":
+        # Anyone who knows the JWT secret can mint tokens for any user.
+        if self.app_env in ("staging", "production") and (
+            "change-me" in self.jwt_secret or len(self.jwt_secret) < 32
+        ):
+            raise ValueError("JWT_SECRET must be set to a random value of 32+ characters")
+        return self
 
 
 @lru_cache
