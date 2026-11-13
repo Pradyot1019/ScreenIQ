@@ -5,7 +5,8 @@
 ## Decision
 One repository with `backend/` (FastAPI, async SQLAlchemy, Alembic, ARQ) and `frontend/`
 (Next.js 15 App Router, TypeScript strict). Postgres 16 with pgvector holds both relational data
-and embeddings; Redis is the job queue; MinIO stands in for S3 locally.
+and embeddings; Redis is the job queue; MinIO stands in for S3 locally (replaced by RustFS,
+see ADR 0002).
 
 ## Why
 - One PR can change an API contract and its client together; CI checks both.

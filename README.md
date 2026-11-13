@@ -9,18 +9,18 @@ resume, and a human always makes the final decision. Full spec: `docs/ScreenIQ_P
 
 ```bash
 cp backend/.env.example backend/.env
-make up                                  # postgres+pgvector, redis, minio, api, worker, frontend
+make up                                  # postgres+pgvector, redis, rustfs, api, worker, frontend
 curl localhost:8000/health               # {"status":"ok"}
 curl localhost:8000/ready                # {"status":"ready","checks":{"database":true,"redis":true}}
 open http://localhost:3000               # green "API ok" dot
 open http://localhost:8000/api/docs      # Swagger UI
-open http://localhost:9001               # MinIO console (minioadmin / minioadmin)
+open http://localhost:9001/rustfs/console/  # RustFS S3 console (minioadmin / minioadmin)
 ```
 
 ## Local dev without Docker for the app code
 
 ```bash
-docker compose up -d postgres redis minio minio-init
+docker compose up -d postgres redis rustfs s3-init
 cd backend && cp .env.example .env && uv sync && uv run alembic upgrade head
 uv run uvicorn app.main:app --reload            # API on :8000
 uv run arq app.workers.arq_worker.WorkerSettings # worker

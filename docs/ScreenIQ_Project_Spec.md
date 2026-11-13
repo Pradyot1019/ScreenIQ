@@ -56,7 +56,7 @@ Priority: **P0** = MVP must-have, **P1** = should have, **P2** = nice to have.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-20 | Bulk upload of up to 50 PDF/DOCX files per batch, max 5 MB each; validated by MIME type and magic bytes | P0 |
-| FR-21 | Files are stored in object storage (S3/R2/MinIO) under org-scoped keys; download only through signed URLs | P0 |
+| FR-21 | Files are stored in object storage (S3/R2/RustFS) under org-scoped keys; download only through signed URLs | P0 |
 | FR-22 | Text extraction (PyMuPDF for PDF, python-docx for DOCX); OCR fallback for scanned PDFs | P0 / OCR P2 |
 | FR-23 | **Structured parsing** with an LLM into a Pydantic schema: name, email, phone, links, education[], experience[] (company, role, start, end, bullets), skills[], projects[], certifications[], total years of experience | P0 |
 | FR-24 | Deduplicate candidates by email and file hash; a re-upload links to the existing candidate | P1 |
@@ -151,7 +151,7 @@ Priority: **P0** = MVP must-have, **P1** = should have, **P2** = nice to have.
 | Backend | **FastAPI + Pydantic v2 + SQLAlchemy 2.0 (async) + Alembic** | You know FastAPI/Pydantic; Alembic adds DB migrations |
 | Database | **PostgreSQL 16 + pgvector** | Relational data and vector search in one DB |
 | Queue / workers | **Redis + ARQ** (or Celery) | Async parsing and screening |
-| Object storage | MinIO locally, Cloudflare R2 / S3 in production | Resume files |
+| Object storage | RustFS locally (S3-compatible; MinIO images were discontinued, see ADR 0002), Cloudflare R2 / S3 in production | Resume files |
 | LLM | **Gemini 2.5 Flash** behind an `LLMProvider` interface (swap to OpenAI/Claude/local) | Cheap and fast, with structured output |
 | Embeddings | Gemini `text-embedding` or `bge-small` locally | Talent search |
 | Orchestration | Plain Python services; LangGraph only for the "Ask the pool" agent | Avoid over-engineering |
@@ -175,7 +175,7 @@ Priority: **P0** = MVP must-have, **P1** = should have, **P2** = nice to have.
         │ signed URL (PDF view)                │       ▼
 ┌───────┴──────┐                        ┌──────┴──┐  ┌─────────┐
 │  S3 / R2 /   │ ◀──── upload/store ─── │Postgres │  │  Redis  │
-│   MinIO      │                        │+pgvector│  │ (queue) │
+│   RustFS     │                        │+pgvector│  │ (queue) │
 └──────────────┘                        └──────▲──┘  └────┬────┘
                                                │          │ consume
                                         ┌──────┴──────────▼──────┐
@@ -411,7 +411,7 @@ screeniq/
 │   ├── alembic/
 │   ├── evals/ (datasets/, run_eval.py, metrics.py, reports/)
 │   └── tests/ (unit/, integration/, tenancy/)
-├── docker-compose.yml         # postgres+pgvector, redis, minio, api, worker, frontend
+├── docker-compose.yml         # postgres+pgvector, redis, rustfs, api, worker, frontend
 ├── .github/workflows/ (ci.yml, eval.yml)
 ├── docs/ (architecture.png, API.md, EVAL_REPORT.md, ADRs/)
 └── README.md
@@ -423,7 +423,7 @@ screeniq/
 
 | Phase | Weeks | Scope | Definition of Done |
 |---|---|---|---|
-| **0. Setup** | 0.5 | Monorepo, docker-compose (Postgres+pgvector, Redis, MinIO), FastAPI skeleton, Next.js skeleton, ruff/mypy/ESLint, CI running tests | `docker compose up` works; `/health` returns 200; CI is green |
+| **0. Setup** | 0.5 | Monorepo, docker-compose (Postgres+pgvector, Redis, RustFS), FastAPI skeleton, Next.js skeleton, ruff/mypy/ESLint, CI running tests | `docker compose up` works; `/health` returns 200; CI is green |
 | **1. Auth & Orgs** | 1 | FR-01,02,04,06; JWT + refresh rotation; `get_current_user` + `require_role` dependencies; tenant-scoped repository base class; login/signup UI | Tenancy tests pass (user A cannot read org B's data → 404) |
 | **2. Jobs & Rubric** | 1 | FR-10–13; LLM provider abstraction; `jd_parse` prompt; rubric editor UI with weight validation | Paste a JD → editable rubric in under 10 s |
 | **3. Resume Intake** | 1.5 | FR-20–25; S3 upload; ARQ worker; extraction + `resume_parse`; batch progress polling; upload UI | 20 resumes uploaded → all parsed; failures show reasons |
@@ -562,7 +562,7 @@ UI: create-job flow (paste JD → generate rubric → edit weights/knockouts →
 
 **Phase 3 — Resume Intake**
 ```
-Phase 3. Implement FR-20 to FR-25. S3 storage via MinIO locally with signed
+Phase 3. Implement FR-20 to FR-25. S3 storage via RustFS locally with signed
 URLs; multipart bulk upload returning 202 + batch_id; ARQ worker with retries;
 text extraction (PyMuPDF, python-docx); resume_parse_v1 prompt into the
 ParsedResume schema with one repair retry; candidate dedupe by email/hash;
