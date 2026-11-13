@@ -1,5 +1,6 @@
 """Import every model module here so Alembic autogenerate can see them."""
 
+from app.models.activity import Note, StageEvent
 from app.models.candidate import (
     Application,
     ApplicationSource,
@@ -26,6 +27,7 @@ __all__ = [
     "ParseStatus",
     "Resume",
     "Stage",
+    "StageEvent",
     "CriterionScore",
     "CriterionType",
     "EmploymentType",
@@ -34,6 +36,7 @@ __all__ = [
     "LLMCall",
     "LLMPurpose",
     "Membership",
+    "Note",
     "Organization",
     "Plan",
     "Recommendation",

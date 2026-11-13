@@ -23,6 +23,9 @@ export function CandidatesTable({ jobId, canWrite }: { jobId: string; canWrite: 
   const screenPending = useScreenPending(jobId);
   const [minScore, setMinScore] = useState(0);
   const [hideKnockouts, setHideKnockouts] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].slice(-4)));
 
   const rows = (apps.data ?? []).filter((a) => {
     const s = a.screening;
@@ -60,6 +63,20 @@ export function CandidatesTable({ jobId, canWrite }: { jobId: string; canWrite: 
           />
           <Label htmlFor="hide-ko">Hide must-have missing</Label>
         </div>
+        <Button
+          asChild={selected.length >= 2}
+          variant="outline"
+          disabled={selected.length < 2}
+          title={selected.length < 2 ? "Tick 2 to 4 candidates to compare" : undefined}
+        >
+          {selected.length >= 2 ? (
+            <Link href={`/app/jobs/${jobId}/compare?ids=${selected.join(",")}`}>
+              Compare {selected.length}
+            </Link>
+          ) : (
+            <span>Compare</span>
+          )}
+        </Button>
         {canWrite && pending > 0 && (
           <Button
             variant="outline"
@@ -87,6 +104,9 @@ export function CandidatesTable({ jobId, canWrite }: { jobId: string; canWrite: 
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-8">
+                <span className="sr-only">Select to compare</span>
+              </TableHead>
               <TableHead>Candidate</TableHead>
               <TableHead>Experience</TableHead>
               <TableHead>Score</TableHead>
@@ -99,6 +119,13 @@ export function CandidatesTable({ jobId, canWrite }: { jobId: string; canWrite: 
               const s = a.screening;
               return (
                 <TableRow key={a.id}>
+                  <TableCell>
+                    <Checkbox
+                      aria-label={`Select ${a.candidate.full_name ?? "candidate"} to compare`}
+                      checked={selected.includes(a.id)}
+                      onCheckedChange={() => toggle(a.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Link href={`/app/applications/${a.id}`} className="font-medium hover:underline">
                       {a.candidate.full_name ?? "Unnamed candidate"}

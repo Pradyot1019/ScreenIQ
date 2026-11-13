@@ -254,5 +254,59 @@ export const ApplicationDetailSchema = z.object({
       }),
     ),
   }).nullable(),
+  history: z.array(
+    z.object({
+      from_stage: StageSchema,
+      to_stage: StageSchema,
+      actor_name: z.string().nullable(),
+      created_at: z.string(),
+    }),
+  ),
 });
 export type ApplicationDetail = z.infer<typeof ApplicationDetailSchema>;
+
+export const STAGES = StageSchema.options;
+export const STAGE_LABELS: Record<Stage, string> = {
+  applied: "Applied",
+  screened: "Screened",
+  shortlisted: "Shortlisted",
+  interview: "Interview",
+  offer: "Offer",
+  hired: "Hired",
+  rejected: "Rejected",
+};
+
+export const NoteSchema = z.object({
+  id: z.uuid(),
+  body: z.string(),
+  author_name: z.string().nullable(),
+  created_at: z.string(),
+});
+export type Note = z.infer<typeof NoteSchema>;
+
+export const ResumeViewSchema = z.object({
+  filename: z.string(),
+  mime_type: z.string(),
+  url: z.string().nullable(),
+  url_expires_in: z.number(),
+  text: z.string(),
+  highlights: z.array(z.object({ start: z.number(), end: z.number(), criterion: z.string() })),
+});
+export type ResumeView = z.infer<typeof ResumeViewSchema>;
+
+export const CompareSchema = z.object({
+  criteria: z.array(z.string()),
+  candidates: z.array(
+    z.object({
+      application_id: z.uuid(),
+      name: z.string().nullable(),
+      stage: StageSchema,
+      overall_score: decimal.nullable(),
+      recommendation: RecommendationSchema.nullable(),
+      knockout_failed: z.boolean().nullable(),
+      scores: z.record(z.string(), z.number()),
+      low_confidence: z.array(z.string()),
+    }),
+  ),
+});
+export type Compare = z.infer<typeof CompareSchema>;

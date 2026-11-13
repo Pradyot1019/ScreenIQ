@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
 from sqlalchemy import DateTime, Enum, ForeignKey, func, text
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 UUIDPk = Annotated[
@@ -25,9 +26,15 @@ CreatedAt = Annotated[
 ]
 
 
-def pg_enum(cls: type[enum.StrEnum], name: str) -> Enum:
-    """A Postgres ENUM that stores the lowercase *values* ("owner"), not the names ("OWNER")."""
-    return Enum(cls, name=name, values_callable=lambda e: [m.value for m in e])
+def pg_enum(cls: type[enum.StrEnum], name: str, *, existing: bool = False) -> Enum:
+    """A Postgres ENUM that stores the lowercase *values* ("owner"), not the names ("OWNER").
+
+    existing=True reuses a type another table already created (no second CREATE TYPE).
+    """
+    values = lambda e: [m.value for m in e]  # noqa: E731
+    if existing:
+        return postgresql.ENUM(cls, name=name, values_callable=values, create_type=False)
+    return Enum(cls, name=name, values_callable=values)
 
 
 class TenantMixin:

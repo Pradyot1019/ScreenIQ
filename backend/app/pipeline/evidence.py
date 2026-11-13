@@ -45,3 +45,32 @@ def check_evidence(quotes: list[str], resume_text: str) -> EvidenceCheck:
         else:
             rejected.append(quote)
     return EvidenceCheck(verified, rejected)
+
+
+def _normalize_with_map(text: str) -> tuple[str, list[int]]:
+    """normalize(), but also remember which original index each output char came from,
+    so a match found in the normalized text can be mapped back to the original."""
+    out: list[str] = []
+    origin: list[int] = []
+    for i, ch in enumerate(text):
+        for c in unicodedata.normalize("NFKC", ch).translate(_TRANSLATE).lower():
+            if c.isspace():
+                if not out or out[-1] == " ":
+                    continue  # collapse runs of whitespace, drop leading
+                c = " "
+            out.append(c)
+            origin.append(i)
+    return "".join(out), origin
+
+
+def locate(quote: str, resume_text: str) -> tuple[int, int] | None:
+    """(start, end) of the quote in the ORIGINAL resume text, or None if not found.
+    Used to highlight evidence in the resume view."""
+    needle = normalize(quote)
+    if len(needle) < MIN_QUOTE_CHARS:
+        return None
+    haystack, origin = _normalize_with_map(resume_text)
+    match = fuzz.partial_ratio_alignment(needle, haystack)
+    if match is None or match.score < MATCH_THRESHOLD or match.dest_end <= match.dest_start:
+        return None
+    return origin[match.dest_start], origin[match.dest_end - 1] + 1

@@ -36,6 +36,7 @@ from app.models import (
     Screening,
     ScreeningStatus,
     Stage,
+    StageEvent,
 )
 from app.pipeline.score import (
     CriterionInput,
@@ -280,6 +281,14 @@ class ScreeningRunner:
         app.latest_screening_id = screening.id
         if app.stage == Stage.APPLIED:
             app.stage = Stage.SCREENED  # the only stage change the AI ever makes
+            self.session.add(  # actor_id None = the system, shown as "AI screening"
+                StageEvent(
+                    org_id=org_id,
+                    application_id=app.id,
+                    from_stage=Stage.APPLIED,
+                    to_stage=Stage.SCREENED,
+                )
+            )
         await self.session.commit()
 
     async def fail(self, screening_id: uuid.UUID, reason: str) -> None:

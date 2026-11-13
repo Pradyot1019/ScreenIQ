@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.models import Recommendation, ScreeningStatus, Stage
 
@@ -58,6 +58,13 @@ class ScreeningOut(ScreeningBrief):
     criterion_scores: list[CriterionScoreOut]
 
 
+class StageEventOut(BaseModel):
+    from_stage: Stage
+    to_stage: Stage
+    actor_name: str | None  # None = the system (AI screening)
+    created_at: datetime
+
+
 class ApplicationDetail(BaseModel):
     id: uuid.UUID
     job_id: uuid.UUID
@@ -66,6 +73,53 @@ class ApplicationDetail(BaseModel):
     candidate: CandidateBrief
     profile: dict[str, Any]  # the parsed resume (ParsedResume as JSON)
     screening: ScreeningOut | None
+    history: list[StageEventOut]
+
+
+class StageIn(BaseModel):
+    stage: Stage
+
+
+class NoteIn(BaseModel):
+    body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
+
+
+class NoteOut(BaseModel):
+    id: uuid.UUID
+    body: str
+    author_name: str | None
+    created_at: datetime
+
+
+class HighlightOut(BaseModel):
+    start: int
+    end: int
+    criterion: str
+
+
+class ResumeView(BaseModel):
+    filename: str
+    mime_type: str
+    url: str | None  # short-lived signed URL for the original file
+    url_expires_in: int
+    text: str
+    highlights: list[HighlightOut]
+
+
+class CompareCandidate(BaseModel):
+    application_id: uuid.UUID
+    name: str | None
+    stage: Stage
+    overall_score: Decimal | None
+    recommendation: Recommendation | None
+    knockout_failed: bool | None
+    scores: dict[str, int]  # criterion name -> 0-10
+    low_confidence: list[str]  # criterion names flagged low confidence
+
+
+class CompareOut(BaseModel):
+    criteria: list[str]
+    candidates: list[CompareCandidate]
 
 
 class ScreeningQueued(BaseModel):

@@ -8,14 +8,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useApplication, useRescreen } from "@/lib/applications";
+import { ActivityPanel } from "@/components/screening/activity-panel";
+import { ResumePanel } from "@/components/screening/resume-panel";
+import { useApplication, useMoveStage, useRescreen } from "@/lib/applications";
 import { useCanWrite } from "@/lib/auth";
+import { STAGES, STAGE_LABELS, StageSchema } from "@/lib/schemas";
 
 export default function ApplicationPage() {
   const { id } = useParams<{ id: string }>();
   const app = useApplication(id);
   const rescreen = useRescreen(id);
   const canWrite = useCanWrite();
+  const move = useMoveStage(app.data?.job_id ?? "");
 
   if (app.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (app.isError) {
@@ -46,9 +50,25 @@ export default function ApplicationPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="capitalize">
-            {app.data.stage}
-          </Badge>
+          {canWrite ? (
+            <label className="flex items-center gap-2 text-sm">
+              Stage
+              <select
+                value={app.data.stage}
+                disabled={move.isPending}
+                onChange={(e) => move.mutate({ id, stage: StageSchema.parse(e.target.value) })}
+                className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+              >
+                {STAGES.map((st) => (
+                  <option key={st} value={st}>
+                    {STAGE_LABELS[st]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <Badge variant="outline">{STAGE_LABELS[app.data.stage]}</Badge>
+          )}
           {canWrite && (
             <Button
               variant="outline"
@@ -62,9 +82,9 @@ export default function ApplicationPage() {
         </div>
       </div>
 
-      {rescreen.error && (
+      {(rescreen.error ?? move.error) && (
         <Alert variant="destructive">
-          <AlertDescription>{rescreen.error.message}</AlertDescription>
+          <AlertDescription>{(rescreen.error ?? move.error)?.message}</AlertDescription>
         </Alert>
       )}
 
@@ -186,6 +206,10 @@ export default function ApplicationPage() {
           )}
         </CardContent>
       </Card>
+
+      <ResumePanel applicationId={id} screeningId={s?.id} />
+
+      <ActivityPanel applicationId={id} history={app.data.history} />
     </div>
   );
 }

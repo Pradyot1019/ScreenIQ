@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { CandidatesTable } from "@/components/jobs/candidates-table";
+import { PipelineBoard } from "@/components/jobs/pipeline-board";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RubricEditor } from "@/components/jobs/rubric-editor";
 import { StatusBadge } from "@/components/jobs/status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -87,19 +89,33 @@ export default function JobPage() {
         </Alert>
       )}
 
-      <CandidatesTable jobId={j.id} canWrite={canWrite} />
-
-      {/* key: re-mount the editor with fresh rows whenever the saved rubric changes */}
-      <RubricEditor
-        key={j.criteria.map((c) => c.id).join()}
-        job={j}
-        editable={canWrite && j.status !== "closed"}
-      />
-
-      <details className="rounded-lg border p-4">
-        <summary className="cursor-pointer text-sm font-medium">Job description</summary>
-        <p className="mt-3 text-sm whitespace-pre-wrap text-muted-foreground">{j.description}</p>
-      </details>
+      <Tabs defaultValue={j.criteria.length ? "candidates" : "rubric"}>
+        <TabsList>
+          <TabsTrigger value="candidates">Candidates</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+          <TabsTrigger value="rubric">Rubric</TabsTrigger>
+        </TabsList>
+        <TabsContent value="candidates" className="pt-4">
+          <CandidatesTable jobId={j.id} canWrite={canWrite} />
+        </TabsContent>
+        <TabsContent value="pipeline" className="pt-4">
+          <PipelineBoard jobId={j.id} canWrite={canWrite} />
+        </TabsContent>
+        <TabsContent value="rubric" className="grid gap-6 pt-4">
+          {/* key: re-mount the editor with fresh rows whenever the saved rubric changes */}
+          <RubricEditor
+            key={j.criteria.map((c) => c.id).join()}
+            job={j}
+            editable={canWrite && j.status !== "closed"}
+          />
+          <details className="rounded-lg border p-4">
+            <summary className="cursor-pointer text-sm font-medium">Job description</summary>
+            <p className="mt-3 text-sm whitespace-pre-wrap text-muted-foreground">
+              {j.description}
+            </p>
+          </details>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import asyncio
 import os
 from collections.abc import AsyncIterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy.engine import make_url
@@ -39,6 +40,9 @@ from sqlalchemy.pool import NullPool  # noqa: E402
 
 from app.db.session import get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
+
+if TYPE_CHECKING:
+    from tests.scenarios import World
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -111,3 +115,12 @@ def app(db_session: AsyncSession) -> FastAPI:
 async def api(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
         yield c
+
+
+@pytest.fixture
+async def world(app: FastAPI, api: AsyncClient, db_session: AsyncSession) -> "World":
+    """An org with a job (rubric saved) and Priya's parsed, not-yet-screened application."""
+    from tests.scenarios import World, build_world
+
+    result: World = await build_world(app, api, db_session)
+    return result

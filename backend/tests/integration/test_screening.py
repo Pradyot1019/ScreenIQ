@@ -7,71 +7,22 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
-from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import decode_access_token
 from app.models import Application, LLMCall, LLMPurpose, Resume, Role, Screening, Stage
-from app.services.intake import ResumeParser
 from app.services.screening import ScreeningRunner
-from app.storage.s3 import get_storage
 from app.workers import arq_worker
-from app.workers.queue import get_queue
-from tests.factories import add_member, create_job, signup, valid_rubric
-from tests.fakes import FakeLLMProvider, FakeQueue, InMemoryStorage, fixture_text, make_pdf
-
-PRIYA_PDF = make_pdf(fixture_text("resumes/priya_sharma.txt"))
-PRIYA_PARSE = fixture_text("llm/resume_parse_v1/priya_sharma.json")
-PRIYA_SCREEN = fixture_text("llm/screen_v1/priya_backend.json")
-INFLATED = fixture_text("llm/screen_v1/injected_inflated.json")
-
-
-@dataclass
-class World:
-    headers: dict[str, str]
-    org_id: uuid.UUID
-    job_id: str
-    application_id: uuid.UUID
-    queue: FakeQueue
-    storage: InMemoryStorage = field(repr=False)
-
-
-@pytest.fixture
-async def world(app: FastAPI, api: AsyncClient, db_session: AsyncSession) -> World:
-    """An org with a job (rubric saved) and Priya's parsed application, not yet screened."""
-    storage, queue = InMemoryStorage(), FakeQueue()
-    app.dependency_overrides[get_storage] = lambda: storage
-    app.dependency_overrides[get_queue] = lambda: queue
-    owner = await signup(api, f"screen-{uuid.uuid4().hex[:6]}@example.com")
-    job = await create_job(api, owner.headers)
-    await api.put(f"/api/v1/jobs/{job['id']}/rubric", json=valid_rubric(), headers=owner.headers)
-    files = [("files", ("priya.pdf", PRIYA_PDF, "application/pdf"))]
-    batch = (
-        await api.post(f"/api/v1/jobs/{job['id']}/resumes", files=files, headers=owner.headers)
-    ).json()
-    rid = uuid.UUID(batch["files"][0]["resume_id"])
-    app_id = await ResumeParser(db_session, storage, FakeLLMProvider([PRIYA_PARSE])).run(rid)
-    assert app_id is not None
-    queue.jobs.clear()
-    return World(
-        owner.headers,
-        decode_access_token(owner.access_token).org,
-        job["id"],
-        app_id,
-        queue,
-        storage,
-    )
-
-
-async def _screen(api: AsyncClient, db: AsyncSession, w: World, reply: str) -> FakeLLMProvider:
-    r = await api.post(f"/api/v1/applications/{w.application_id}/screenings", headers=w.headers)
-    assert r.status_code == 202, r.text
-    fake = FakeLLMProvider([reply])
-    await ScreeningRunner(db, fake).run(uuid.UUID(r.json()["id"]))
-    return fake
-
+from tests.factories import add_member, create_job
+from tests.fakes import FakeLLMProvider, fixture_text, make_pdf
+from tests.scenarios import (
+    INFLATED,
+    PRIYA_PARSE,
+    PRIYA_SCREEN,
+    World,
+    _screen,
+)
 
 # ---- the happy path -------------------------------------------------------------------
 
