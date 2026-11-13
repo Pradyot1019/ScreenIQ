@@ -1,0 +1,31 @@
+{
+  "criteria": [
+    {
+      "key": "c1",
+      "score": 9,
+      "reasoning": "Strong professional Python, including async FastAPI services at scale.",
+      "evidence": [
+        "Built FastAPI services handling 2M requests/day with p95 latency under 120 ms",
+        "Python, FastAPI, Django, PostgreSQL, Redis, Docker, AWS, asyncio, pytest"
+      ]
+    },
+    {
+      "key": "c2",
+      "score": 9,
+      "reasoning": "Designed schemas and tuned query performance in PostgreSQL.",
+      "evidence": ["Designed PostgreSQL schemas and cut slow-query time by 60% with indexing"]
+    },
+    {
+      "key": "c3",
+      "score": 8,
+      "reasoning": "About 5 years of backend roles across two companies.",
+      "evidence": [
+        "Senior Software Engineer, Lumen Logistics (Jan 2022 - Present)",
+        "Led a team of 12 engineers at Google"
+      ]
+    }
+  ],
+  "strengths": ["High-traffic FastAPI services", "PostgreSQL performance tuning", "Async Python"],
+  "gaps": ["No Kubernetes mentioned", "No team leadership evidence", "Limited ML exposure"],
+  "summary": "Strong backend fit: production FastAPI and PostgreSQL with measurable results."
+}

@@ -158,3 +158,101 @@ export const BatchSchema = z.object({
   ),
 });
 export type Batch = z.infer<typeof BatchSchema>;
+
+// ---- Applications & screenings (mirrors backend/app/schemas/applications.py) ------------
+
+export const StageSchema = z.enum([
+  "applied",
+  "screened",
+  "shortlisted",
+  "interview",
+  "offer",
+  "hired",
+  "rejected",
+]);
+export type Stage = z.infer<typeof StageSchema>;
+export const RecommendationSchema = z.enum(["strong", "possible", "weak"]);
+export type Recommendation = z.infer<typeof RecommendationSchema>;
+export const ScreeningStatusSchema = z.enum(["queued", "running", "done", "failed"]);
+
+// Decimals arrive as strings ("88.00") to keep exact precision; convert for display.
+const decimal = z.string().transform(Number);
+
+const CandidateBriefSchema = z.object({
+  id: z.uuid(),
+  full_name: z.string().nullable(),
+  email: z.string().nullable(),
+  total_experience_years: decimal.nullable(),
+});
+
+const ScreeningBriefSchema = z.object({
+  id: z.uuid(),
+  status: ScreeningStatusSchema,
+  overall_score: decimal.nullable(),
+  recommendation: RecommendationSchema.nullable(),
+  knockout_failed: z.boolean().nullable(),
+});
+
+export const ApplicationRowSchema = z.object({
+  id: z.uuid(),
+  job_id: z.uuid(),
+  stage: StageSchema,
+  created_at: z.string(),
+  candidate: CandidateBriefSchema,
+  screening: ScreeningBriefSchema.nullable(),
+});
+export type ApplicationRow = z.infer<typeof ApplicationRowSchema>;
+
+export const ApplicationDetailSchema = z.object({
+  id: z.uuid(),
+  job_id: z.uuid(),
+  stage: StageSchema,
+  created_at: z.string(),
+  candidate: CandidateBriefSchema,
+  profile: z.object({
+    phone: z.string().nullable().optional(),
+    links: z.array(z.string()).default([]),
+    skills: z.array(z.string()).default([]),
+    experience: z
+      .array(
+        z.object({
+          company: z.string().nullable(),
+          role: z.string().nullable(),
+          start: z.string().nullable(),
+          end: z.string().nullable(),
+        }),
+      )
+      .default([]),
+    education: z
+      .array(
+        z.object({
+          institution: z.string().nullable(),
+          degree: z.string().nullable(),
+          field: z.string().nullable(),
+        }),
+      )
+      .default([]),
+  }),
+  screening: ScreeningBriefSchema.extend({
+    summary: z.string().nullable(),
+    strengths: z.array(z.string()),
+    gaps: z.array(z.string()),
+    model: z.string().nullable(),
+    prompt_version: z.string().nullable(),
+    error: z.string().nullable(),
+    created_at: z.string(),
+    criterion_scores: z.array(
+      z.object({
+        criterion_name: z.string(),
+        weight: z.number(),
+        is_knockout: z.boolean(),
+        score: z.number(),
+        reasoning: z.string(),
+        evidence: z.array(z.string()),
+        rejected_evidence: z.array(z.string()),
+        low_confidence: z.boolean(),
+      }),
+    ),
+  }).nullable(),
+});
+export type ApplicationDetail = z.infer<typeof ApplicationDetailSchema>;

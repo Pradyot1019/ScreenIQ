@@ -148,12 +148,13 @@ class ResumeParser:
         self.storage = storage
         self.provider = provider
 
-    async def run(self, resume_id: uuid.UUID) -> None:
+    async def run(self, resume_id: uuid.UUID) -> uuid.UUID | None:
+        """Returns the id of the application created/updated (to screen next), if any."""
         # Looked up by id alone: the id came from our own queue, not from a user. Every
         # query after this is scoped to the resume's own org.
         resume = await self.session.get(Resume, resume_id)
         if resume is None or resume.parse_status in (ParseStatus.PARSED, ParseStatus.FAILED):
-            return
+            return None
         org_id = resume.org_id
         resume.parse_status = ParseStatus.PARSING
         await self.session.commit()
@@ -166,14 +167,15 @@ class ResumeParser:
             parsed = await self._parse(resume, text)
         except UnsupportedFileError as e:
             await self.fail(resume_id, str(e))
-            return
+            return None
         except BadGatewayError:
             await self.fail(resume_id, "The AI couldn't read this resume. Try re-uploading it.")
-            return
+            return None
         except (ServiceUnavailableError, GatewayTimeoutError, BotoCoreError, ClientError) as e:
             await self._requeue(resume_id)
             raise TransientParseError(type(e).__name__) from e
 
+        application_id: uuid.UUID | None = None
         try:
             candidate = await self._upsert_candidate(org_id, parsed)
             resume.candidate_id = candidate.id
@@ -182,7 +184,10 @@ class ResumeParser:
             if resume.batch_id:
                 batch = await BatchRepository(self.session, org_id).get(resume.batch_id)
                 if batch:
-                    await self._ensure_application(org_id, batch.job_id, candidate.id, resume.id)
+                    application = await self._ensure_application(
+                        org_id, batch.job_id, candidate.id, resume.id
+                    )
+                    application_id = application.id
                     await BatchRepository(self.session, org_id).record_result(
                         batch.id, failed=False
                     )
@@ -200,6 +205,7 @@ class ResumeParser:
                 "extra_fields": {"resume_id": str(resume.id), "candidate_id": str(candidate.id)}
             },
         )
+        return application_id
 
     async def _requeue(self, resume_id: uuid.UUID) -> None:
         resume = await self.session.get(Resume, resume_id)
@@ -264,12 +270,12 @@ class ResumeParser:
 
     async def _ensure_application(
         self, org_id: uuid.UUID, job_id: uuid.UUID, candidate_id: uuid.UUID, resume_id: uuid.UUID
-    ) -> None:
+    ) -> Application:
         repo = ApplicationRepository(self.session, org_id)
         existing = await repo.get_for(job_id, candidate_id)
         if existing is None:
-            await repo.add(
+            return await repo.add(
                 Application(job_id=job_id, candidate_id=candidate_id, resume_id=resume_id)
             )
-        else:
-            existing.resume_id = resume_id  # same person applied again: keep the newest resume
+        existing.resume_id = resume_id  # same person applied again: keep the newest resume
+        return existing

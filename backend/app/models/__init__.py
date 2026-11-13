@@ -14,6 +14,7 @@ from app.models.job import CriterionType, EmploymentType, Job, JobStatus, Rubric
 from app.models.llm_call import LLMCall, LLMPurpose
 from app.models.organization import Membership, Organization, Plan, Role
 from app.models.refresh_token import RefreshToken
+from app.models.screening import CriterionScore, Recommendation, Screening, ScreeningStatus
 from app.models.user import User
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "ParseStatus",
     "Resume",
     "Stage",
+    "CriterionScore",
     "CriterionType",
     "EmploymentType",
     "Job",
@@ -34,8 +36,11 @@ __all__ = [
     "Membership",
     "Organization",
     "Plan",
+    "Recommendation",
     "RefreshToken",
     "Role",
     "RubricCriterion",
+    "Screening",
+    "ScreeningStatus",
     "User",
 ]

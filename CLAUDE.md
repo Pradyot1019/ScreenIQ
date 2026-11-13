@@ -48,6 +48,9 @@ Playwright E2E (a manual checklist is enough).
 "Undocumented" and the default 422 shape); jd_parse_v2 so knockouts get low weight
 (measure with Phase 6 evals); FR-26 edit parsed candidate fields; resume download
 endpoint using S3Storage.signed_url (needed by the Phase 5 PDF viewer).
+**Phase 6 eval findings so far:** jd_parse over-weights knockouts; screen_v1 is generous (100/100
+for a strong match) so check score spread; resume_parse undercounted years (Priya 4 vs ~6);
+a strength said "recognized institution" (prestige leak) -> include in the bias eval.
 
 ## Status
 
@@ -58,7 +61,10 @@ endpoint using S3Storage.signed_url (needed by the Phase 5 PDF viewer).
   → candidate dedupe (email + file hash) → application. Restart the worker container after
   backend code changes (it doesn't auto-reload). Gemini rejects schemas with many maxItems,
   so json_schema_for drops them (Pydantic still enforces).
-- Phase 4 Screening engine: next (FR-30–34, 36, 38).
+- Phase 4 Screening engine: done. screen_v1 with per-rubric key enum; evidence fuzzy-matched
+  (rapidfuzz >= 90); no verified evidence -> score capped at 3; deterministic weighted score,
+  knockouts (< 5) and recommendation; auto-screen after parse; AI only moves applied -> screened.
+- Phase 5 Pipeline UI: next (FR-40–42, 45).
 
 ## Commands
 

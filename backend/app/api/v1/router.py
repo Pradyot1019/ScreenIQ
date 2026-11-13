@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import auth, health, intake, jobs, me, org
+from app.api.v1 import applications, auth, health, intake, jobs, me, org
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(health.router)
@@ -11,3 +11,4 @@ api_router.include_router(me.router)
 api_router.include_router(org.router)
 api_router.include_router(jobs.router)
 api_router.include_router(intake.router)
+api_router.include_router(applications.router)

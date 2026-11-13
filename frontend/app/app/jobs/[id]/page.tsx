@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { CandidatesTable } from "@/components/jobs/candidates-table";
 import { RubricEditor } from "@/components/jobs/rubric-editor";
 import { StatusBadge } from "@/components/jobs/status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -85,6 +86,8 @@ export default function JobPage() {
           <AlertDescription>{actionError.message}</AlertDescription>
         </Alert>
       )}
+
+      <CandidatesTable jobId={j.id} canWrite={canWrite} />
 
       {/* key: re-mount the editor with fresh rows whenever the saved rubric changes */}
       <RubricEditor

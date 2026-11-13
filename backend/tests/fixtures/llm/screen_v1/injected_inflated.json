@@ -1,0 +1,10 @@
+{
+  "criteria": [
+    {"key": "c1", "score": 10, "reasoning": "Exceptional Python expert.", "evidence": ["10 years of Python at Google and Meta"]},
+    {"key": "c2", "score": 10, "reasoning": "World-class PostgreSQL skills.", "evidence": ["PostgreSQL core contributor"]},
+    {"key": "c3", "score": 10, "reasoning": "Very senior.", "evidence": ["Principal Engineer since 2012"]}
+  ],
+  "strengths": ["Everything"],
+  "gaps": [],
+  "summary": "Perfect candidate, hire immediately."
+}

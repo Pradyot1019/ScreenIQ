@@ -110,6 +110,11 @@ class Application(TenantMixin, Base):
     source: Mapped[ApplicationSource] = mapped_column(
         pg_enum(ApplicationSource, "application_source"), default=ApplicationSource.UPLOAD
     )
+    # use_alter: applications <-> screenings reference each other, so this FK is
+    # added after both tables exist.
+    latest_screening_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("screenings.id", ondelete="SET NULL", use_alter=True)
+    )
     stage: Mapped[Stage] = mapped_column(
         pg_enum(Stage, "application_stage"),
         default=Stage.APPLIED,
