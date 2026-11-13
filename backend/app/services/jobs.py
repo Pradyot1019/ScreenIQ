@@ -54,7 +54,7 @@ class JobService:
             # Random suffix: titles repeat ("Backend Engineer"), and the slug is public
             # (/apply/{slug}), so it shouldn't be guessable either.
             slug=f"{slugify(data.title)[:60]}-{secrets.token_hex(4)}",
-            created_by=self.ctx.user.id,
+            created_by=self.ctx.user_id,
         )
         await self.jobs.add(job)
         await self.session.commit()

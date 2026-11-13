@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     jwt_refresh_ttl_days: int = 7
 
     s3_endpoint: str = "http://localhost:9000"
+    s3_public_endpoint: str = ""  # what browsers use for signed URLs; empty = s3_endpoint
     s3_bucket: str = "screeniq-resumes"
     s3_access_key: str = "minioadmin"
     s3_secret_key: str = "minioadmin"  # noqa: S105

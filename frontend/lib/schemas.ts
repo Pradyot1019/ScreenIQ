@@ -132,3 +132,29 @@ export const EMPLOYMENT_LABELS: Record<EmploymentType, string> = {
   contract: "Contract",
   internship: "Internship",
 };
+
+// ---- Resume intake (mirrors backend/app/schemas/intake.py) ------------------------------
+
+export const ParseStatusSchema = z.enum(["queued", "parsing", "parsed", "failed"]);
+export type ParseStatus = z.infer<typeof ParseStatusSchema>;
+
+export const BatchSchema = z.object({
+  id: z.uuid(),
+  job_id: z.uuid(),
+  status: z.enum(["processing", "done"]),
+  total: z.number(),
+  processed: z.number(),
+  failed: z.number(),
+  created_at: z.string(),
+  files: z.array(
+    z.object({
+      resume_id: z.uuid(),
+      filename: z.string(),
+      status: ParseStatusSchema,
+      error: z.string().nullable(),
+      candidate_id: z.uuid().nullable(),
+      candidate_name: z.string().nullable(),
+    }),
+  ),
+});
+export type Batch = z.infer<typeof BatchSchema>;

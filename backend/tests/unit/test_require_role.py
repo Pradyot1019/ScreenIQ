@@ -31,7 +31,7 @@ def _app(role: Role) -> FastAPI:
     async def _fake_org() -> OrgContext:
         user = User(id=uuid.uuid4(), email="x@example.com", full_name="X", password_hash="-")
         org = Organization(id=uuid.uuid4(), name="Org", slug="org")
-        return OrgContext(user=user, org=org, role=role)
+        return OrgContext(user=user, org=org, role=role, org_id=org.id, user_id=user.id)
 
     app.dependency_overrides[get_current_org] = _fake_org
     return app

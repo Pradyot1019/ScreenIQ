@@ -61,6 +61,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://screeniq:screeniq@postgres:5432/screeniq
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://rustfs:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
     ports: ["8000:8000"]
     depends_on:
       postgres: { condition: service_healthy }
@@ -77,6 +78,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://screeniq:screeniq@postgres:5432/screeniq
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://rustfs:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

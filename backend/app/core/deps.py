@@ -62,10 +62,10 @@ class OrgContext:
     user: User
     org: Organization
     role: Role
-
-    @property
-    def org_id(self) -> uuid.UUID:
-        return self.org.id
+    # Plain values copied at request start, so they stay readable even if the session
+    # later expires the ORM objects (reading an expired attribute would hit the DB).
+    org_id: uuid.UUID
+    user_id: uuid.UUID
 
 
 async def get_current_org(claims: AccessToken, user: CurrentUser, db: DbSession) -> OrgContext:
@@ -75,7 +75,7 @@ async def get_current_org(claims: AccessToken, user: CurrentUser, db: DbSession)
     org = await OrganizationRepository(db).get(claims.org) if membership else None
     if membership is None or org is None:
         raise NotFoundError("Organization not found.")
-    return OrgContext(user=user, org=org, role=membership.role)
+    return OrgContext(user=user, org=org, role=membership.role, org_id=org.id, user_id=user.id)
 
 
 CurrentOrg = Annotated[OrgContext, Depends(get_current_org)]

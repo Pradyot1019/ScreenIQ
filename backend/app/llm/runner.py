@@ -50,7 +50,10 @@ def json_schema_for(model: type[BaseModel]) -> dict[str, Any]:
         if isinstance(node, dict):
             if "$ref" in node:
                 return resolve(defs[node["$ref"].split("/")[-1]])
-            return {k: resolve(v) for k, v in node.items()}
+            # Gemini rejects schemas with many maxItems limits (400 "invalid argument",
+            # found with ParsedResume's nine lists). The limits still apply: Pydantic
+            # validates the reply against the full model afterwards.
+            return {k: resolve(v) for k, v in node.items() if k != "maxItems"}
         if isinstance(node, list):
             return [resolve(v) for v in node]
         return node

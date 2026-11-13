@@ -3,7 +3,7 @@
 Multi-tenant, explainable AI resume screening. Every score cites verbatim evidence from the
 resume, and a human always makes the final decision. Full spec: `docs/ScreenIQ_Project_Spec.md`.
 
-**Status:** Phase 2 (jobs & AI rubric) complete. Next: Phase 3, Resume intake.
+**Status:** Phase 3 (resume intake) complete. Next: Phase 4, Screening engine.
 
 ## Quick start (Docker)
 

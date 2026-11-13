@@ -1,0 +1,22 @@
+Priya Sharma
+Backend Engineer | Bengaluru | priya.sharma@example.com | +91 98765 43210
+github.com/priya-sharma-dev | linkedin.com/in/priya-sharma-dev
+
+EXPERIENCE
+Senior Software Engineer, Lumen Logistics (Jan 2022 - Present)
+- Built FastAPI services handling 2M requests/day with p95 latency under 120 ms
+- Designed PostgreSQL schemas and cut slow-query time by 60% with indexing
+- Ran background jobs on Redis queues (ARQ) for invoice processing
+
+Software Engineer, Kite Analytics (Jul 2020 - Dec 2021)
+- Developed REST APIs in Python and Django for a reporting product
+- Containerised services with Docker and deployed them on AWS ECS
+
+EDUCATION
+B.Tech, Computer Science, VIT Vellore (2016 - 2020)
+
+SKILLS
+Python, FastAPI, Django, PostgreSQL, Redis, Docker, AWS, asyncio, pytest
+
+PROJECTS
+Rate limiter library - token-bucket rate limiter for asyncio apps, 300+ GitHub stars

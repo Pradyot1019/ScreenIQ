@@ -46,14 +46,19 @@ Playwright E2E (a manual checklist is enough).
 
 **Later (parked polish):** document error responses in OpenAPI (Swagger shows 409 as
 "Undocumented" and the default 422 shape); jd_parse_v2 so knockouts get low weight
-(measure with Phase 6 evals).
+(measure with Phase 6 evals); FR-26 edit parsed candidate fields; resume download
+endpoint using S3Storage.signed_url (needed by the Phase 5 PDF viewer).
 
 ## Status
 
 - Phase 0 Setup: done. Local S3 is RustFS (ADR 0002), so S3 clients need path-style addressing.
 - Phase 1 Auth & Orgs: done. In-memory access JWT + rotating refresh cookie, TenantRepository.
 - Phase 2 Jobs & Rubric: done (LLM layer, jobs API, free `gemini-3.5-flash-lite` ADR 0003, jobs UI).
-- Phase 3 Resume intake: next (FR-20–25).
+- Phase 3 Resume intake: done. Upload → RustFS → ARQ worker (PyMuPDF/python-docx → resume_parse_v1)
+  → candidate dedupe (email + file hash) → application. Restart the worker container after
+  backend code changes (it doesn't auto-reload). Gemini rejects schemas with many maxItems,
+  so json_schema_for drops them (Pydantic still enforces).
+- Phase 4 Screening engine: next (FR-30–34, 36, 38).
 
 ## Commands
 

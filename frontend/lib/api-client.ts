@@ -68,7 +68,9 @@ export function refreshSession(): Promise<string | null> {
 
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
-  if (init?.body !== undefined) headers.set("Content-Type", "application/json");
+  // JSON bodies only. For FormData (file uploads) the browser must set the multipart
+  // Content-Type itself, because it includes the generated boundary string.
+  if (typeof init?.body === "string") headers.set("Content-Type", "application/json");
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
 
   const res = await fetch(`${API_URL}${path}`, {

@@ -5,12 +5,13 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from app.llm.cost import cost_usd
 from app.llm.gemini import GeminiProvider
 from app.llm.prompts import load_prompt
 from app.llm.runner import json_schema_for
-from app.llm.schemas import RubricSuggestion
+from app.llm.schemas import ParsedResume, RubricSuggestion
 from app.services.rubric import normalize_weights
 
 # ---- prompts --------------------------------------------------------------------------
@@ -64,6 +65,14 @@ def test_json_schema_is_self_contained() -> None:
     assert "$ref" not in text and "$defs" not in text
     item = schema["properties"]["criteria"]["items"]
     assert item["properties"]["type"]["enum"] == ["skill", "experience", "education", "other"]
+
+
+def test_json_schema_omits_max_items_but_pydantic_still_enforces_them() -> None:
+    # Gemini 400s on schemas with many maxItems; they're dropped from what we send...
+    assert "maxItems" not in str(json_schema_for(ParsedResume))
+    # ...but the reply is still validated against the real model.
+    with pytest.raises(ValidationError):
+        ParsedResume.model_validate({"links": ["x"] * 21})
 
 
 # ---- weight normalization -------------------------------------------------------------

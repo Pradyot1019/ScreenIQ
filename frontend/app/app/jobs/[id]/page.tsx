@@ -50,6 +50,11 @@ export default function JobPage() {
         </div>
         {canWrite && (
           <div className="flex gap-2">
+            {j.status !== "closed" && (
+              <Button asChild variant="outline">
+                <Link href={`/app/jobs/${j.id}/upload`}>Upload resumes</Link>
+              </Button>
+            )}
             {j.status === "draft" && (
               <Button onClick={() => publish.mutate()} disabled={publish.isPending}>
                 Publish
