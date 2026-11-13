@@ -17,6 +17,10 @@ open http://localhost:8000/api/docs      # Swagger UI
 open http://localhost:9001/rustfs/console/  # RustFS S3 console (minioadmin / minioadmin)
 ```
 
+## Deploy
+
+Free-tier deployment (Vercel + Render + Neon + Cloudflare R2): see [DEPLOY.md](DEPLOY.md).
+
 ## Local dev without Docker for the app code
 
 ```bash

@@ -1,0 +1,48 @@
+# Render Blueprint: in Render, "New" -> "Blueprint" -> pick this repo. See DEPLOY.md.
+services:
+  - type: web
+    name: screeniq-api
+    runtime: docker
+    region: singapore # closest free region to India; keep Neon in Singapore too
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: JWT_SECRET
+        generateValue: true # Render creates a long random secret
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: screeniq-queue
+          property: connectionString
+      - key: LLM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        value: screeniq-resumes
+      # Secrets: Render asks for these when you create the Blueprint.
+      - key: DATABASE_URL # Neon connection string
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: S3_ENDPOINT # https://<account-id>.r2.cloudflarestorage.com
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: CORS_ORIGINS # your Vercel URL, e.g. https://screeniq.vercel.app
+        sync: false
+
+  - type: keyvalue
+    name: screeniq-queue
+    region: singapore # must match the web service to connect privately
+    plan: free
+    ipAllowList: [] # reachable only from your Render services

@@ -6,8 +6,9 @@ Every secret comes from the environment; nothing sensitive is hard-coded.
 
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
 
     s3_endpoint: str = "http://localhost:9000"
     s3_public_endpoint: str = ""  # what browsers use for signed URLs; empty = s3_endpoint
+    s3_region: str = "us-east-1"  # Cloudflare R2 uses "auto"
     s3_bucket: str = "screeniq-resumes"
     s3_access_key: str = "minioadmin"
     s3_secret_key: str = "minioadmin"  # noqa: S105
@@ -38,6 +40,21 @@ class Settings(BaseSettings):
 
     # Comma-separated in the env var, parsed into a list here.
     cors_origins_raw: str = Field(default="http://localhost:3000", alias="CORS_ORIGINS")
+
+    @field_validator("database_url")
+    @classmethod
+    def _asyncpg_url(cls, url: str) -> str:
+        """Accept the URL hosts hand out (e.g. Neon's `postgresql://...?sslmode=require`)
+        and turn it into what SQLAlchemy + asyncpg expect."""
+        parts = urlsplit(url)
+        scheme = {"postgres": "postgresql+asyncpg", "postgresql": "postgresql+asyncpg"}.get(
+            parts.scheme, parts.scheme
+        )
+        query = dict(parse_qsl(parts.query))
+        if "sslmode" in query:  # libpq spelling -> asyncpg spelling
+            query["ssl"] = query.pop("sslmode")
+        query.pop("channel_binding", None)  # libpq-only option asyncpg rejects
+        return urlunsplit(parts._replace(scheme=scheme, query=urlencode(query)))
 
     @property
     def cors_origins(self) -> list[str]:

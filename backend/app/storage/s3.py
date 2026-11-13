@@ -5,13 +5,15 @@ event loop free. Keys are always org-scoped: `orgs/{org_id}/resumes/{resume_id}.
 """
 
 import asyncio
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import boto3
 from botocore.config import Config
-from mypy_boto3_s3 import S3Client
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:  # type stubs are a dev dependency; not installed in production
+    from mypy_boto3_s3 import S3Client
 
 
 class Storage(Protocol):
@@ -20,14 +22,14 @@ class Storage(Protocol):
     async def signed_url(self, key: str, expires_s: int = 300) -> str: ...
 
 
-def _client(endpoint: str) -> S3Client:
+def _client(endpoint: str) -> "S3Client":
     s = get_settings()
     return boto3.client(
         "s3",
         endpoint_url=endpoint,
         aws_access_key_id=s.s3_access_key,
         aws_secret_access_key=s.s3_secret_key,
-        region_name="us-east-1",
+        region_name=s.s3_region,
         # Path-style (host/bucket/key): RustFS needs it, R2 supports it (ADR 0002).
         config=Config(s3={"addressing_style": "path"}, signature_version="s3v4"),
     )

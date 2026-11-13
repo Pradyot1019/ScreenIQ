@@ -68,7 +68,10 @@ a strength said "recognized institution" (prestige leak) -> include in the bias 
   with no actor), notes (viewers may comment), resume text with evidence highlights + 5-min
   signed 'Open original', compare 2-4, kanban (dnd-kit, keyboard works). Event tables use
   clock_timestamp() so same-transaction events keep their order.
-- Next per Scope: deploy the MVP (cut-down Phase 10), then Phase 6 evals.
+- Deploy: code ready (render.yaml, backend/start.sh = migrate + worker + API in one container,
+  Vercel rewrites /api/* -> API_ORIGIN for first-party cookies). Steps in DEPLOY.md; the user
+  creates the Neon/R2/Render/Vercel accounts and enters secrets themselves.
+- Next per Scope: Phase 6 evals (after the live site is verified).
 
 ## Commands
 

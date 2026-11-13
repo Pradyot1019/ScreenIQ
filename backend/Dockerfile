@@ -5,8 +5,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 WORKDIR /app
 COPY pyproject.toml uv.lock* ./
-RUN uv sync --no-install-project --group dev
+# Runtime dependencies only: tests and linters run in CI, never in the container.
+RUN uv sync --no-install-project --no-dev
 
 COPY . .
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Production: migrate, then API + worker in one container (see start.sh).
+# docker-compose overrides this for local dev (separate api/worker, auto-reload).
+CMD ["sh", "./start.sh"]

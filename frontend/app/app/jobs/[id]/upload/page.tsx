@@ -71,6 +71,16 @@ export default function UploadPage() {
         </p>
       </div>
 
+      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
+        <Alert>
+          <AlertDescription>
+            Public demo: please upload only fictional or sample resumes, never real people&apos;s.
+            Files are processed with Google Gemini&apos;s free tier, which may use them to improve
+            Google&apos;s products.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {!batchId && (
         <>
           <div
